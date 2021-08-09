@@ -1,0 +1,130 @@
+using System;
+using System.Linq;
+using CompLib.Util;
+using System.Threading;
+using System.IO;
+
+public class Program
+{
+
+    public void Solve()
+    {
+        var sc = new Scanner();
+#if !DEBUG
+        System.Console.SetOut(new System.IO.StreamWriter(System.Console.OpenStandardOutput()) { AutoFlush = false });
+#endif
+        int t = sc.NextInt();
+        for (int i = 0; i < t; i++)
+        {
+            Q(sc);
+        }
+        System.Console.Out.Flush();
+    }
+
+    void Q(Scanner sc)
+    {
+        int m = sc.NextInt();
+        var a = new int[2][];
+        for (int i = 0; i < 2; i++)
+        {
+            a[i] = sc.IntArray();
+        }
+        if (m == 1)
+        {
+            Console.WriteLine("0");
+            return;
+        }
+
+        long[][] sum = new long[2][];
+        for (int i = 0; i < 2; i++)
+        {
+            sum[i] = new long[m + 1];
+            for (int j = 0; j < m; j++)
+            {
+                sum[i][j + 1] = sum[i][j] + a[i][j];
+            }
+        }
+
+        // i列目
+        // aliceがいる行
+        // bobがいる列
+
+        long ans = long.MaxValue;
+
+        for (int i = 0; i < m; i++)
+        {
+            // i列目でaliceが下移動した
+            // bob 初回下移動 or 最後まで下移動しない
+            long q = sum[1][i];
+            long w = sum[0][m] - sum[0][i + 1];
+            ans = Math.Min(ans, Math.Max(q, w));
+        }
+
+        Console.WriteLine(ans);
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+    // public static void Main(string[] args) => new Thread(new Program().Solve, 1 << 27).Start();
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            if (_index >= _line.Length)
+            {
+                string s;
+                do
+                {
+                    s = Console.ReadLine();
+                } while (s.Length == 0);
+
+                _line = s.Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public string ReadLine()
+        {
+            _index = _line.Length;
+            return Console.ReadLine();
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            string s = Console.ReadLine();
+            _line = s.Length == 0 ? new string[0] : s.Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
