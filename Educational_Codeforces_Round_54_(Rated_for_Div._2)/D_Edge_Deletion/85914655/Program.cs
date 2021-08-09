@@ -1,0 +1,344 @@
+using System;
+using System.Collections.Generic;
+using CompLib.Collections;
+using CompLib.Graph;
+using CompLib.Util;
+
+public class Program
+{
+    private int N, M, K;
+    private List<(int to, int w, int num)>[] E;
+
+    public void Solve()
+    {
+        var sc = new Scanner();
+        N = sc.NextInt();
+        M = sc.NextInt();
+        K = sc.NextInt();
+        E = new List<(int to, int w, int num)>[N];
+        for (int i = 0; i < N; i++)
+        {
+            E[i] = new List<(int to, int w, int num)>();
+        }
+
+        for (int i = 0; i < M; i++)
+        {
+            int x = sc.NextInt() - 1;
+            int y = sc.NextInt() - 1;
+            int w = sc.NextInt();
+            E[x].Add((y, w, i));
+            E[y].Add((x, w, i));
+        }
+
+        long[] dist = new long[N];
+        for (int i = 0; i < N; i++)
+        {
+            dist[i] = long.MaxValue / 2;
+        }
+
+        dist[0] = 0;
+        var pq = new PriorityQueue<(int node, long dist)>((l, r) => l.dist.CompareTo(r.dist));
+        pq.Enqueue((0, 0));
+
+        bool[] f = new bool[N];
+        f[0] = true;
+        List<int> ans = new List<int>();
+
+        while (pq.Count > 0)
+        {
+            var d = pq.Dequeue();
+            if (d.dist > dist[d.node]) continue;
+            foreach ((int to, int w, int num) t in E[d.node])
+            {
+                if (dist[t.to] <= dist[d.node] + t.w) continue;
+                dist[t.to] = dist[d.node] + t.w;
+                pq.Enqueue((t.to, dist[d.node] + t.w));
+            }
+
+            if (ans.Count < K && !f[d.node])
+            {
+                foreach ((int to, int w, int num) t in E[d.node])
+                {
+                    if (dist[t.to] + t.w == dist[d.node] && f[t.to])
+                    {
+                        ans.Add(t.num + 1);
+                        f[d.node] = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        Console.WriteLine(ans.Count);
+        Console.WriteLine(string.Join(" ", ans));
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+}
+
+// https://bitbucket.org/camypaper/complib
+namespace CompLib.Collections
+{
+    using System;
+    using System.Collections.Generic;
+
+    #region PriorityQueue
+
+    /// <summary>
+    /// 指定した型のインスタンスを最も価値が低い順に取り出すことが可能な可変サイズのコレクションを表します．
+    /// </summary>
+    /// <typeparam name="T">優先度付きキュー内の要素の型を指定します．</typeparam>
+    /// <remarks>内部的にはバイナリヒープによって実装されています．</remarks>
+    public class PriorityQueue<T>
+    {
+        readonly List<T> heap = new List<T>();
+        readonly Comparison<T> cmp;
+
+        /// <summary>
+        /// デフォルトの比較子を使用してインスタンスを初期化します．
+        /// </summary>
+        /// <remarks>この操作は O(1) で実行されます．</remarks>
+        public PriorityQueue()
+        {
+            cmp = Comparer<T>.Default.Compare;
+        }
+
+        /// <summary>
+        /// デリゲートで表されるような比較関数を使用してインスタンスを初期化します．
+        /// </summary>
+        /// <param name="comparison"></param>
+        /// <remarks>この操作は O(1) で実行されます．</remarks>
+        public PriorityQueue(Comparison<T> comparison)
+        {
+            cmp = comparison;
+        }
+
+        /// <summary>
+        /// 指定された比較子を使用してインスタンスを初期化します．
+        /// </summary>
+        /// <param name="comparer"></param>
+        /// <remarks>この操作は O(1) で実行されます．</remarks>
+        public PriorityQueue(IComparer<T> comparer)
+        {
+            cmp = comparer.Compare;
+        }
+
+        /// <summary>
+        /// 優先度付きキューに要素を追加します．
+        /// </summary>
+        /// <param name="item">優先度付きキューに追加される要素</param>
+        /// <remarks>最悪計算量 O(log N) で実行されます．</remarks>
+        public void Enqueue(T item)
+        {
+            var pos = heap.Count;
+            heap.Add(item);
+            while (pos > 0)
+            {
+                var par = (pos - 1) / 2;
+                if (cmp(heap[par], item) <= 0)
+                    break;
+                heap[pos] = heap[par];
+                pos = par;
+            }
+
+            heap[pos] = item;
+        }
+
+        /// <summary>
+        /// 優先度付きキューから最も価値が低い要素を削除し，返します．
+        /// </summary>
+        /// <returns>優先度付きキューから削除された要素．</returns>
+        /// <remarks>最悪計算量 O(log N) で実行されます．</remarks>
+        public T Dequeue()
+        {
+            var ret = heap[0];
+            var pos = 0;
+            var x = heap[heap.Count - 1];
+
+            while (pos * 2 + 1 < heap.Count - 1)
+            {
+                var lch = pos * 2 + 1;
+                var rch = pos * 2 + 2;
+                if (rch < heap.Count - 1 && cmp(heap[rch], heap[lch]) < 0) lch = rch;
+                if (cmp(heap[lch], x) >= 0)
+                    break;
+                heap[pos] = heap[lch];
+                pos = lch;
+            }
+
+            heap[pos] = x;
+            heap.RemoveAt(heap.Count - 1);
+            return ret;
+        }
+
+        /// <summary>
+        ///  優先度付きキューに含まれる最も価値が低い要素を削除せずに返します．
+        /// </summary>
+        /// <returns>優先度付きキューに含まれる最も価値が低い要素．</returns>
+        /// <remarks>この操作は O(1) で実行されます．</remarks>
+        public T Peek()
+        {
+            return heap[0];
+        }
+
+        /// <summary>
+        /// 優先度付きキュー内の要素の数を取得します．
+        /// </summary>
+        /// <returns>優先度付キュー内にある要素の数</returns>
+        /// <remarks>最悪計算量 O(1) で実行されます．</remarks>
+        public int Count
+        {
+            get { return heap.Count; }
+        }
+
+        /// <summary>
+        /// 優先度付きキュー内に要素が存在するかどうかを O(1) で判定します．
+        /// </summary>
+        /// <returns>優先度付キュー内にある要素が存在するならば true，そうでなければ　false．</returns>
+        /// <remarks>この操作は O(1) で実行されます．</remarks>
+        public bool Any()
+        {
+            return heap.Count > 0;
+        }
+
+        /// <summary>
+        /// 優先度付きキューに含まれる要素を昇順に並べて返します．
+        /// </summary>
+        /// <remarks>この操作は計算量 O(N log N)で実行されます．</remarks>
+        public T[] Items
+        {
+            get
+            {
+                var ret = heap.ToArray();
+                Array.Sort(ret, cmp);
+                return ret;
+            }
+        }
+    }
+
+    #endregion
+}
+
+namespace CompLib.Graph
+{
+    class UnionFind
+    {
+        private readonly int[] _parent, _size;
+
+        public UnionFind(int size)
+        {
+            _parent = new int[size];
+            _size = new int[size];
+            for (int i = 0; i < size; i++)
+            {
+                _parent[i] = i;
+                _size[i] = 1;
+            }
+        }
+
+        /// <summary>
+        /// iが含まれる木の根を調べる
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public int Find(int i) => _parent[i] == i ? i : Find(_parent[i]);
+
+        /// <summary>
+        /// x,yが同じグループに含まれるか?
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public bool Same(int x, int y) => Find(x) == Find(y);
+
+        /// <summary>
+        /// xとyを同じグループにする 元々同じグループならfalseを返す
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public bool Connect(int x, int y)
+        {
+            x = Find(x);
+            y = Find(y);
+            if (x == y) return false;
+
+            // データ構造をマージする一般的なテク
+            if (_size[x] > _size[y])
+            {
+                _parent[y] = x;
+                _size[x] += _size[y];
+            }
+            else
+            {
+                _parent[x] = y;
+                _size[y] += _size[x];
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// iが含まれるグループのサイズ
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public int GetSize(int i) => _size[Find(i)];
+    }
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            if (_index >= _line.Length)
+            {
+                string s;
+                do
+                {
+                    s = Console.ReadLine();
+                } while (s.Length == 0);
+
+                _line = s.Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            string s = Console.ReadLine();
+            _line = s.Length == 0 ? new string[0] : s.Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
