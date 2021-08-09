@@ -1,0 +1,100 @@
+using CompLib.Util;
+using System;
+using System.Linq;
+
+public class Program
+{
+
+    public void Solve()
+    {
+        var sc = new Scanner();
+        int n = sc.NextInt();
+        string s = sc.Next();
+        int min = int.MaxValue;
+        int[] ar = new int[3];
+        string rgb = "RGB";
+        int[] i = new int[3];
+        for (i[0] = 0; i[0] < 3; i[0]++)
+        {
+            for (i[1] = 0; i[1] < 3; i[1]++)
+            {
+                if (i[0] == i[1]) continue;
+                for (i[2] = 0; i[2] < 3; i[2]++)
+                {
+                    if (i[0] == i[2] || i[1] == i[2]) continue;
+                    int cnt = 0;
+                    for (int l = 0; l < n; l++)
+                    {
+                        if (s[l] != rgb[i[l % 3]]) cnt++;
+                    }
+                    // Console.WriteLine($"{i[0]} {i[1]} {i[2]} {cnt}");
+                    if(cnt < min)
+                    {
+
+                        min = cnt;
+                        ar = i.ToArray();
+                    }
+                }
+            }
+        }
+
+        char[] ans = new char[n];
+        for (int j = 0; j < n; j++)
+        {
+            ans[j] = rgb[ar[j % 3]];
+        }
+        Console.WriteLine(min);
+        Console.WriteLine(new string(ans));
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            while (_index >= _line.Length)
+            {
+                _line = Console.ReadLine().Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            _line = Console.ReadLine().Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
