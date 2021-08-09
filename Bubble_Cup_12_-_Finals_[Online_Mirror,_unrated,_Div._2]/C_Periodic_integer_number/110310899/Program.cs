@@ -1,0 +1,163 @@
+using System;
+using System.Linq;
+using CompLib.Util;
+using System.Threading;
+
+public class Program
+{
+    private int L, N;
+    private string A;
+
+    public void Solve()
+    {
+        var sc = new Scanner();
+        L = sc.NextInt();
+        A = sc.Next();
+        N = A.Length;
+
+        // 99999999...
+        bool flag2 = true;
+        for (int i = 0; i < N && flag2; i++)
+        {
+            flag2 &= A[i] == '9';
+        }
+
+        if (N % L != 0 || flag2)
+        {
+            int d = N / L + 1;
+            char[] tmp = new char[d * L];
+            for (int i = 0; i < d; i++)
+            {
+                for (int j = 0; j < L; j++)
+                {
+                    tmp[i * L + j] = j == 0 ? '1' : '0';
+                }
+            }
+
+            Console.WriteLine(new string(tmp));
+            return;
+        }
+
+
+        // 先頭L桁ループ
+        {
+            char[] tmp = new char[N];
+            for (int i = 0; i < N; i++)
+            {
+                tmp[i] = A[i % L];
+            }
+
+            // Aより大きいか?
+            bool flag = false;
+            for (int i = 0; i < N; i++)
+            {
+                if (A[i] < tmp[i])
+                {
+                    flag = true;
+                    break;
+                }
+                else if (A[i] > tmp[i])
+                {
+                    break;
+                }
+            }
+
+
+            if (flag)
+            {
+                Console.WriteLine(new string(tmp));
+                return;
+            }
+        }
+
+
+        {
+            // 先頭L桁+1
+            char[] tmp = new char[N];
+            for (int i = 0; i < L; i++)
+            {
+                tmp[i] = A[i];
+            }
+
+            tmp[L - 1]++;
+            for (int i = L - 1; tmp[i] > '9'; i--)
+            {
+                tmp[i] = '0';
+                tmp[i - 1]++;
+            }
+
+            for (int i = L; i < N; i++)
+            {
+                tmp[i] = tmp[i % L];
+            }
+
+            Console.WriteLine(new string(tmp));
+            return;
+        }
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+    // public static void Main(string[] args) => new Thread(new Program().Solve, 1 << 27).Start();
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            if (_index >= _line.Length)
+            {
+                string s;
+                do
+                {
+                    s = Console.ReadLine();
+                } while (s.Length == 0);
+
+                _line = s.Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public string ReadLine()
+        {
+            _index = _line.Length;
+            return Console.ReadLine();
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            string s = Console.ReadLine();
+            _line = s.Length == 0 ? new string[0] : s.Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
