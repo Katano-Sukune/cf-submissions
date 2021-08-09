@@ -1,0 +1,149 @@
+using System;
+using System.Linq;
+using CompLib.Util;
+using System.Threading;
+using System.Collections.Generic;
+
+public class Program
+{
+    long A, B;
+    public void Solve()
+    {
+        checked
+        {
+            var sc = new Scanner();
+            (A, B) = (sc.NextLong(), sc.NextLong());
+
+            long ans = long.MaxValue;
+            var divC = Div(A + B);
+            var divA = Div(A);
+            var divB = Div(B);
+
+            for (int i = 0; i < divA.Count; i++)
+            {
+                long x = divA[i];
+                // x以上
+                int ok = divC.Count;
+                int ng = -1;
+                while (ok - ng > 1)
+                {
+                    int mid = (ok + ng) / 2;
+                    if (divC[mid] >= x) ok = mid;
+                    else ng = mid;
+                }
+
+                for (int t = ok; t < divC.Count && divA[divA.Count - i - 1] <= divC[divC.Count - t - 1]; t++)
+                {
+                    ans = Math.Min(ans, divC[t] + divC[divC.Count - t - 1]);
+                }
+            }
+
+            for (int i = 0; i < divB.Count; i++)
+            {
+                long x = divB[i];
+                // x以上
+                int ok = divC.Count;
+                int ng = -1;
+                while (ok - ng > 1)
+                {
+                    int mid = (ok + ng) / 2;
+                    if (divC[mid] >= x) ok = mid;
+                    else ng = mid;
+                }
+
+                for (int t = ok; t < divC.Count && divB[divB.Count - i - 1] <= divC[divC.Count - t - 1]; t++)
+                {
+                    ans = Math.Min(ans, divC[t] + divC[divC.Count - t - 1]);
+                }
+            }
+
+            Console.WriteLine((ulong)ans * 2);
+        }
+    }
+
+    List<long> Div(long n)
+    {
+        var ans = new List<long>();
+        var rev = new List<long>();
+        for (long x = 1; x * x <= n; x++)
+        {
+            if (n % x == 0)
+            {
+                ans.Add(x);
+                if (n / x != x) rev.Add(n / x);
+            }
+        }
+
+        for (int i = rev.Count - 1; i >= 0; i--)
+        {
+            ans.Add(rev[i]);
+        }
+
+        return ans;
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+    // public static void Main(string[] args) => new Thread(new Program().Solve, 1 << 27).Start();
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            if (_index >= _line.Length)
+            {
+                string s;
+                do
+                {
+                    s = Console.ReadLine();
+                } while (s.Length == 0);
+
+                _line = s.Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public string ReadLine()
+        {
+            _index = _line.Length;
+            return Console.ReadLine();
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            string s = Console.ReadLine();
+            _line = s.Length == 0 ? new string[0] : s.Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
