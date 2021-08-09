@@ -1,0 +1,150 @@
+import java.util.*
+import kotlin.*
+
+import java.io.InputStream
+import java.lang.NumberFormatException
+import java.lang.StringBuilder
+
+
+fun main(args: Array<String>) {
+    Program().solve()
+}
+
+class Program {
+    fun solve() {
+        val sc = FastScanner()
+        val sj = StringJoiner("\n")
+        val t = sc.nextInt()
+        for (i in 0 until t) {
+            val n = sc.nextInt()
+            val ab = Array(n) { sc.nextInt() to sc.nextInt() }
+            sj.add(q(n, ab))
+        }
+
+        println(sj.toString())
+    }
+
+    fun q(n: Int, ab: Array<Pair<Int, Int>>): String {
+        val map = mutableMapOf<Int, Int>()
+        for (i in 0 until n) {
+            map[ab[i].first] = (map[ab[i].first] ?: 0) + 1
+            map[ab[i].second + 1] = (map[ab[i].second + 1] ?: 0) - 1
+        }
+
+        val ar = map.toList().sortedBy { it.first }
+
+        var t = 0
+        for(i in ar.indices){
+            t += ar[i].second
+            if(t == 1){
+                return ar[i].first.toString()
+            }
+        }
+
+        return "-1"
+    }
+}
+
+
+class FastScanner {
+    companion object {
+        val input: InputStream = System.`in`
+        val buffer = ByteArray(1024) { 0 }
+        fun isPrintableChar(c: Int): Boolean = c in 33..126
+    }
+
+    var ptr = 0
+    var buflen = 0
+    private fun hasNextByte(): Boolean {
+        if (ptr < buflen) {
+            return true
+        } else {
+            ptr = 0
+            buflen = input.read(buffer)
+            if (buflen <= 0) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun readByte(): Int = if (hasNextByte()) buffer[ptr++].toInt() else -1
+
+    private fun skipUnprintable() {
+        while (hasNextByte() && !isPrintableChar(buffer[ptr].toInt())) ptr++
+    }
+
+    fun hasNext(): Boolean {
+        skipUnprintable()
+        return hasNextByte()
+    }
+
+    fun next(): String {
+        if (!hasNext()) throw NoSuchElementException()
+        val sb = StringBuilder()
+        var b = readByte()
+        while (isPrintableChar(b)) {
+            sb.appendCodePoint(b)
+            b = readByte()
+        }
+        return sb.toString()
+    }
+
+    fun nextInt(): Int {
+        if (!hasNext()) throw NoSuchElementException()
+        var n = 0
+        var b = readByte()
+        // '-' = 45
+        val minus = b == 45
+        if (minus) {
+            b = readByte()
+        }
+
+        // '0' = 48 '9' = 57
+        if (b !in 48..57) {
+            throw NumberFormatException()
+        }
+
+        while (true) {
+            if (b in 48..57) {
+                n *= 10
+                n += b - 48
+            } else if (b == -1 || !isPrintableChar(b)) {
+                return if (minus) -n else n
+            } else {
+                throw NumberFormatException()
+            }
+            b = readByte()
+        }
+    }
+
+    fun nextLong(): Long {
+        if (!hasNext()) throw NoSuchElementException()
+        var n = 0L
+        var b = readByte()
+        // '-' = 45
+        val minus = b == 45
+        if (minus) {
+            b = readByte()
+        }
+
+        // '0' = 48 '9' = 57
+        if (b !in 48..57) {
+            throw NumberFormatException()
+        }
+
+        while (true) {
+            if (b in 48..57) {
+                n *= 10
+                n += b - 48
+            } else if (b == -1 || !isPrintableChar(b)) {
+                return if (minus) -n else n
+            } else {
+                throw NumberFormatException()
+            }
+            b = readByte()
+        }
+    }
+
+    fun nextDouble(): Double = next().toDouble()
+}
