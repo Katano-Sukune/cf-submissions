@@ -1,0 +1,212 @@
+using System;
+using System.Linq;
+using CompLib.Util;
+using System.Threading;
+using System.IO;
+
+public class Program
+{
+    string S;
+    int N;
+    long X, Y;
+    public void Solve()
+    {
+        var sc = new Scanner();
+        S = sc.Next();
+        N = S.Length;
+        X = sc.NextLong();
+        Y = sc.NextLong();
+
+        long ans = long.MaxValue;
+        {
+            // ?を全部0にする
+
+            long score = 0;
+            {
+                int t0 = 0;
+                int t1 = 0;
+                foreach (var c in S)
+                {
+                    if (c == '0' || c == '?')
+                    {
+                        score += Y * t1;
+                        t0++;
+                    }
+                    else
+                    {
+                        score += X * t0;
+                        t1++;
+                    }
+                }
+            }
+
+            ans = Math.Min(ans, score);
+            // 先頭から順番に1にしていく
+            {
+                // 以降にある1,0の個数
+                int b1 = S.Count(c => c == '1');
+                int b0 = N - b1;
+
+                // 前にある1,0の個数
+                int f0 = 0;
+                int f1 = 0;
+
+                foreach (var c in S)
+                {
+                    if (c == '1')
+                    {
+                        b1--;
+                        f1++;
+                    }
+                    else if (c == '0')
+                    {
+                        b0--;
+                        f0++;
+                    }
+                    else
+                    {
+                        // 0を1にする
+                        // 0だったときの寄与
+                        long m = f1 * Y + b1 * X;
+                        long p = f0 * X + (b0 - 1) * Y;
+                        score += p;
+                        score -= m;
+
+                        ans = Math.Min(ans, score);
+                        f1++;
+                        b0--;
+                    }
+                }
+            }
+        }
+
+        {
+            // ?を全部0にする
+
+            long score = 0;
+            {
+                int t0 = 0;
+                int t1 = 0;
+                foreach (var c in S)
+                {
+                    if (c == '0')
+                    {
+                        score += Y * t1;
+                        t0++;
+                    }
+                    else if (c == '1' || c == '?')
+                    {
+                        score += X * t0;
+                        t1++;
+                    }
+                }
+            }
+
+            ans = Math.Min(ans, score);
+            // 先頭から順番に1にしていく
+            {
+                // 以降にある1,0の個数
+                int b0 = S.Count(c => c == '0');
+                int b1 = N - b0;
+
+                // 前にある1,0の個数
+                int f0 = 0;
+                int f1 = 0;
+
+                foreach (var c in S)
+                {
+                    if (c == '1')
+                    {
+                        b1--;
+                        f1++;
+                    }
+                    else if (c == '0')
+                    {
+                        b0--;
+                        f0++;
+                    }
+                    else
+                    {
+                        // 1を0にする
+                        // 1だったときの寄与
+                        long m = f0 * X + b0 * Y;
+                        long p = f1 * Y + (b1 - 1) * X;
+                        score += p;
+                        score -= m;
+
+                        ans = Math.Min(ans, score);
+                        f0++;
+                        b1--;
+                    }
+                }
+            }
+        }
+
+        Console.WriteLine(ans);
+    }
+
+    public static void Main(string[] args) => new Program().Solve();
+    // public static void Main(string[] args) => new Thread(new Program().Solve, 1 << 27).Start();
+}
+
+namespace CompLib.Util
+{
+    using System;
+    using System.Linq;
+
+    class Scanner
+    {
+        private string[] _line;
+        private int _index;
+        private const char Separator = ' ';
+
+        public Scanner()
+        {
+            _line = new string[0];
+            _index = 0;
+        }
+
+        public string Next()
+        {
+            if (_index >= _line.Length)
+            {
+                string s;
+                do
+                {
+                    s = Console.ReadLine();
+                } while (s.Length == 0);
+
+                _line = s.Split(Separator);
+                _index = 0;
+            }
+
+            return _line[_index++];
+        }
+
+        public string ReadLine()
+        {
+            _index = _line.Length;
+            return Console.ReadLine();
+        }
+
+        public int NextInt() => int.Parse(Next());
+        public long NextLong() => long.Parse(Next());
+        public double NextDouble() => double.Parse(Next());
+        public decimal NextDecimal() => decimal.Parse(Next());
+        public char NextChar() => Next()[0];
+        public char[] NextCharArray() => Next().ToCharArray();
+
+        public string[] Array()
+        {
+            string s = Console.ReadLine();
+            _line = s.Length == 0 ? new string[0] : s.Split(Separator);
+            _index = _line.Length;
+            return _line;
+        }
+
+        public int[] IntArray() => Array().Select(int.Parse).ToArray();
+        public long[] LongArray() => Array().Select(long.Parse).ToArray();
+        public double[] DoubleArray() => Array().Select(double.Parse).ToArray();
+        public decimal[] DecimalArray() => Array().Select(decimal.Parse).ToArray();
+    }
+}
